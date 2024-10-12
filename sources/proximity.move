@@ -1,5 +1,5 @@
 module proximity::proximity {
-    use sui::clock;
+    use sui::clock::{Clock};
     use sui::event;
 
 
@@ -78,7 +78,7 @@ module proximity::proximity {
     /// Initialize a new User. Each address can only do this once.
     public entry fun init_myself(
         registry: &mut UserRegistry,
-        clock: &clock::Clock,
+        clock: &Clock,
         ctx: &mut TxContext,
 
     ) {
@@ -93,7 +93,7 @@ module proximity::proximity {
         vector::push_back(&mut registry.registered_users, sender);
 
         // Get the current timestamp
-        let current_time = clock::timestamp_ms(clock);
+        let current_time = clock.timestamp_ms();
 
         // Create the initial Node
         let node = Node {
@@ -123,11 +123,11 @@ module proximity::proximity {
             owner: sender,
             user: object::id(&user),
         }
-        
+
         );
 
         //It posts the first ever node
-        transfer::public_freeze_object(node);
+        transfer::share_object(node);
         transfer::share_object(user);
     }
 
@@ -135,7 +135,7 @@ module proximity::proximity {
     public entry fun update_node(
         user: &mut User,
         new_neighbors: vector<ID>,
-        clock: &clock::Clock,
+        clock: &Clock,
         ctx: &mut TxContext,
     ) {
         let sender = ctx.sender();
@@ -144,7 +144,7 @@ module proximity::proximity {
         assert!(user.owner == sender, EUPDATE_NOT_CORRECT_USER);
 
         // Get the current time
-        let current_time = clock::timestamp_ms(clock);
+        let current_time = clock.timestamp_ms();
 
         let last_update_time = user.current_node.timestamp;
         if (current_time - last_update_time < TIME_UPDATE) {
@@ -171,7 +171,12 @@ module proximity::proximity {
             current_node: user.current_node,
         });
 
-        transfer::public_freeze_object(new_node);
+        transfer::share_object(new_node);
+    }
+
+    #[test_only]
+    public fun init_test (ctx: &mut TxContext){
+        init(ctx)
     }
 
 }
