@@ -179,4 +179,9 @@ module proximity::proximity {
         init(ctx)
     }
 
+    #[test_only]
+    public fun get_registered_users (userRegistry : &UserRegistry):vector<address>{
+        userRegistry.registered_users
+    }
+
 }
