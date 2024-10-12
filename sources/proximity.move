@@ -78,10 +78,9 @@ module proximity::proximity {
     /// Initialize a new User. Each address can only do this once.
     public entry fun init_myself(
         registry: &mut UserRegistry,
+        _neighbors: vector<ID>,
         clock: &Clock,
-        ctx: &mut TxContext,
-
-    ) {
+        ctx: &mut TxContext) {
         let sender = ctx.sender();
 
         // Check if the sender is already registered
@@ -99,7 +98,7 @@ module proximity::proximity {
         let node = Node {
             id: object::new(ctx),
             owner: sender,
-            neighbors: vector::empty<ID>(),
+            neighbors: _neighbors,
             timestamp: current_time,
             previous_node: option::none<ID>(),
         };
@@ -122,9 +121,13 @@ module proximity::proximity {
         NewUserEvent {
             owner: sender,
             user: object::id(&user),
-        }
+        });
 
-        );
+        // Emit the NodeUpdateEvent
+        event::emit(NodeUpdateEvent {
+            user: object::id(&user),
+            current_node: user.current_node,
+        });
 
         //It posts the first ever node
         transfer::share_object(node);
@@ -173,6 +176,87 @@ module proximity::proximity {
 
         transfer::share_object(new_node);
     }
+    
+    public entry fun ping_test(){}
+
+    //This method is to purely simulate a graph, quick step (basically creates a fake user that detects random neighbors)
+    public entry fun fake_user(_owner: address, _neighbors: vector<ID>, clock: &Clock, ctx: &mut TxContext){
+        let current_time = clock.timestamp_ms();
+        // Create a vector of IDs
+        
+ 
+
+        // Create a new Node
+        let new_node = Node {
+            id: object::new(ctx),
+            owner: _owner,
+            neighbors: _neighbors,
+            timestamp: current_time,
+            previous_node: option::none<ID>(),
+        };
+
+        let current = Current_Node {
+            neighbors: new_node.neighbors,
+            timestamp: new_node.timestamp
+        };
+
+        // Create the User object
+        let user = User {
+            id: object::new(ctx),
+            owner: _owner,
+            current_node: current,
+            node:  option::some<ID>(object::id(&new_node)),
+        };
+
+        //Emit the new user
+        event::emit(
+        NewUserEvent {
+            owner: _owner,
+            user: object::id(&user),
+        });
+
+        // Emit the NodeUpdateEvent
+        event::emit(NodeUpdateEvent {
+            user: object::id(&user),
+            current_node: user.current_node,
+        });
+
+        transfer::share_object(user);
+        transfer::share_object(new_node);
+
+    }
+
+    public entry fun fake_node_update(user: &mut User, new_neighbors: vector<ID>, clock: &Clock, ctx: &mut TxContext){
+        let current_time = clock.timestamp_ms();
+        // Create a vector of IDs
+
+
+        let new_node = Node {
+            id: object::new(ctx),
+            owner: user.owner,
+            neighbors: new_neighbors,
+            timestamp: current_time,
+            previous_node: user.node,
+        };
+
+        //Updates the current neighbor
+        let current = Current_Node {
+            neighbors: new_node.neighbors,
+            timestamp: new_node.timestamp
+        };
+        
+        //Updates the user
+        user.current_node = current;
+
+        // Emit the NodeUpdateEvent
+        event::emit(NodeUpdateEvent {
+            user: object::id(user),
+            current_node: user.current_node,
+        });
+
+        transfer::share_object(new_node);
+    }
+
 
     #[test_only]
     public fun init_test (ctx: &mut TxContext){
