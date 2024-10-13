@@ -2,7 +2,6 @@ module proximity::proximity {
     use sui::clock::{Clock};
     use sui::event;
 
-
     /// Error codes
     const EUSER_ALREADY_EXISTS: u64 = 0;
     const EUPDATE_TOO_SOON: u64 = 1;
@@ -150,10 +149,7 @@ module proximity::proximity {
         let current_time = clock.timestamp_ms();
 
         let last_update_time = user.current_node.timestamp;
-        if (current_time - last_update_time < TIME_UPDATE) {
-            abort EUPDATE_TOO_SOON // Error code for "Update too soon"
-        };
-
+        assert!(current_time - last_update_time >= TIME_UPDATE, EUPDATE_TOO_SOON);
 
         // Create a new Node
         let new_node = Node {
@@ -166,7 +162,7 @@ module proximity::proximity {
 
         // Update the user's node
         user.node = option::some<ID>(object::id(&new_node));
-        user.current_node = Current_Node{neighbors: new_node.neighbors,timestamp: new_node.timestamp};
+        user.current_node = Current_Node{neighbors: new_node.neighbors, timestamp: new_node.timestamp};
 
         // Emit the NodeUpdateEvent
         event::emit(NodeUpdateEvent {
@@ -181,7 +177,9 @@ module proximity::proximity {
 
     //This method is to purely simulate a graph, quick step (basically creates a fake user that detects random neighbors)
     public entry fun fake_user(_owner: address, _neighbors: vector<ID>, clock: &Clock, ctx: &mut TxContext){
-        let current_time = clock.timestamp_ms();    
+        let current_time = clock.timestamp_ms();
+        // Create a vector of IDs
+        
         // Create a new Node
         let new_node = Node {
             id: object::new(ctx),
@@ -260,8 +258,38 @@ module proximity::proximity {
     }
 
     #[test_only]
-    public fun get_registered_users (userRegistry : &UserRegistry):vector<address>{
+    public fun get_time_update (): u64{
+        TIME_UPDATE
+    }
+
+    #[test_only]
+    public fun get_registered_users (userRegistry : &UserRegistry): vector<address>{
         userRegistry.registered_users
+    }
+
+    #[test_only]
+    public fun get_user_curr_node (user : &User): Current_Node {
+        user.current_node
+    }
+
+    #[test_only]
+    public fun get_user_node (user : &User): Option<ID> {
+        user.node
+    }
+
+    #[test_only]
+    public fun get_curr_node_neighbors (curr_node: &Current_Node): vector<ID> {
+        curr_node.neighbors
+    }
+
+    #[test_only]
+    public fun get_node_neighbors (node: &Node): vector<ID> {
+        node.neighbors
+    }
+
+    #[test_only]
+    public fun get_previous_node (node: &Node): Option<ID> {
+        node.previous_node
     }
 
 }
