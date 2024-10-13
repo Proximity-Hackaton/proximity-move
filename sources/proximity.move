@@ -56,6 +56,11 @@ module proximity::proximity {
         registered_users: vector<address>,
     }
 
+    public struct Owner_proximity has key, store {
+        id: UID,
+        owner: address
+    }
+
     /// Initialize the UserRegistry as a shared object.
     fun init(ctx: &mut TxContext) {
         // Create the UserRegistry object
@@ -128,8 +133,15 @@ module proximity::proximity {
             current_node: user.current_node,
         });
 
+        let _owner_proximity = Owner_proximity{
+            id: object::new(ctx),
+            owner: ctx.sender()
+        };
+        
+        //Transfer owner_proximity to the owner of proximity.
+        transfer::transfer(_owner_proximity, ctx.sender());
         //It posts the first ever node
-        transfer::share_object(node);
+        transfer::freeze_object(node);
         transfer::share_object(user);
     }
 
@@ -170,16 +182,16 @@ module proximity::proximity {
             current_node: user.current_node,
         });
 
-        transfer::share_object(new_node);
+        transfer::freeze_object(new_node);
     }
     
     public entry fun ping_test(){}
 
     //This method is to purely simulate a graph, quick step (basically creates a fake user that detects random neighbors)
-    public entry fun fake_user(_owner: address, _neighbors: vector<ID>, clock: &Clock, ctx: &mut TxContext){
-        let current_time = clock.timestamp_ms();
-        // Create a vector of IDs
-        
+    public entry fun test_user(_owner_proximity: &Owner_proximity, _owner: address, _neighbors: vector<ID>, clock: &Clock, ctx: &mut TxContext){
+        //Check owner_proximity
+        assert!(_owner_proximity.owner == ctx.sender(), EUPDATE_NOT_CORRECT_USER);
+        let current_time = clock.timestamp_ms();    
         // Create a new Node
         let new_node = Node {
             id: object::new(ctx),
@@ -216,14 +228,15 @@ module proximity::proximity {
         });
 
         transfer::share_object(user);
-        transfer::share_object(new_node);
-
+        transfer::freeze_object(new_node);
     }
 
-    public entry fun fake_node_update(user: &mut User, new_neighbors: vector<ID>, clock: &Clock, ctx: &mut TxContext){
+    public entry fun test_node_update(_owner_proximity: &Owner_proximity, user: &mut User, new_neighbors: vector<ID>, clock: &Clock, ctx: &mut TxContext){
+       //Check owner_proximity
+        assert!(_owner_proximity.owner == ctx.sender(), EUPDATE_NOT_CORRECT_USER);
+        
         let current_time = clock.timestamp_ms();
         // Create a vector of IDs
-
 
         let new_node = Node {
             id: object::new(ctx),
@@ -248,7 +261,7 @@ module proximity::proximity {
             current_node: user.current_node,
         });
 
-        transfer::share_object(new_node);
+        transfer::freeze_object(new_node);
     }
 
 
