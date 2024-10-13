@@ -171,7 +171,7 @@ module proximity::proximity_test {
         // Advance the Clock by TIME_UPDATE - 1 milliseconds, not enough time
         ts::next_tx(&mut scenario, user);
         {
-            clock.increment_for_testing(proximity::get_time_update() - 1)
+            clock.increment_for_testing(proximity::get_min_update_interval() - 1)
         };
 
         ts::next_tx(&mut scenario, user);
@@ -223,7 +223,7 @@ module proximity::proximity_test {
         // Advance the Clock by TIME_UPDAT + 1 milliseconds
         ts::next_tx(&mut scenario, user);
         {
-            clock.increment_for_testing(proximity::get_time_update() + 1)
+            clock.increment_for_testing(proximity::get_min_update_interval() + 1)
         };
 
         ts::next_tx(&mut scenario, user);
@@ -277,7 +277,7 @@ module proximity::proximity_test {
         // Advance the Clock by TIME_UPDATE + 1 milliseconds
         ts::next_tx(&mut scenario, user);
         {
-            clock.increment_for_testing(proximity::get_time_update() + 1)
+            clock.increment_for_testing(proximity::get_min_update_interval() + 1)
         };
         
         // The user updates their node with a vector of neighbor IDs
@@ -353,7 +353,7 @@ module proximity::proximity_test {
         // Advance the Clock by TIME_UPDATE + 1 milliseconds
         ts::next_tx(&mut scenario, user1);
         {
-            clock.increment_for_testing(proximity::get_time_update() + 1)
+            clock.increment_for_testing(proximity::get_min_update_interval() + 1)
         };
 
         // Get the user object for user1
@@ -450,7 +450,7 @@ module proximity::proximity_test {
 
         ts::next_tx(&mut scenario, user);
         {
-            clock.increment_for_testing(proximity::get_time_update() + 1)
+            clock.increment_for_testing(proximity::get_min_update_interval() + 1)
         };
 
 
@@ -467,7 +467,7 @@ module proximity::proximity_test {
         // Advance the Clock by TIME_UPDATE + 1 milliseconds
         ts::next_tx(&mut scenario, user);
         {
-            clock.increment_for_testing(proximity::get_time_update() + 1)
+            clock.increment_for_testing(proximity::get_min_update_interval() + 1)
         };
 
         ts::next_tx(&mut scenario, user);
@@ -482,7 +482,7 @@ module proximity::proximity_test {
         // Advance the Clock by TIME_UPDATE + 1 milliseconds
         ts::next_tx(&mut scenario, user);
         {
-            clock.increment_for_testing(proximity::get_time_update() + 1)
+            clock.increment_for_testing(proximity::get_min_update_interval() + 1)
         };
 
         ts::next_tx(&mut scenario, user);
@@ -498,24 +498,24 @@ module proximity::proximity_test {
         ts::next_tx(&mut scenario, user);
         {
             let user_obj = ts::take_shared<proximity::User>(&scenario);
-            let user_node3 = ts::take_shared_by_id<proximity::Node>(&scenario, proximity::get_user_node(&user_obj).extract());
+            let user_node3 = ts::take_immutable_by_id<proximity::Node>(&scenario, proximity::get_user_node(&user_obj).extract());
             let node_neighbours3 = proximity::get_node_neighbors(&user_node3);
             assert!(vector::length<ID>(&node_neighbours3) == 1, 1001); // Expect one neighbor in node 3
             assert!(vector::contains<ID>(&node_neighbours3, &neighbor3.to_id()), 1002); // Expect neighbour 3 in node 3
 
-            let user_node2 = ts::take_shared_by_id<proximity::Node>(&scenario, proximity::get_previous_node(&user_node3).extract());
+            let user_node2 = ts::take_immutable_by_id<proximity::Node>(&scenario, proximity::get_previous_node(&user_node3).extract());
             let node_neighbours2 = proximity::get_node_neighbors(&user_node2);
             assert!(vector::length<ID>(&node_neighbours2) == 1, 1003); // Expect one neighbor in node 2
             assert!(vector::contains<ID>(&node_neighbours2, &neighbor2.to_id()), 1004); // Expect neighbour 3 in node 3
 
-            let user_node1 = ts::take_shared_by_id<proximity::Node>(&scenario, proximity::get_previous_node(&user_node2).extract());
+            let user_node1 = ts::take_immutable_by_id<proximity::Node>(&scenario, proximity::get_previous_node(&user_node2).extract());
             let node_neighbours1 = proximity::get_node_neighbors(&user_node1);
             assert!(vector::length<ID>(&node_neighbours1) == 1, 1005); // Expect one neighbor in node 2
             assert!(vector::contains<ID>(&node_neighbours1, &neighbor1.to_id()), 1006); // Expect neighbour 3 in node 3
 
-            ts::return_shared(user_node1);
-            ts::return_shared(user_node2);
-            ts::return_shared(user_node3);
+            ts::return_immutable(user_node1);
+            ts::return_immutable(user_node2);
+            ts::return_immutable(user_node3);
             ts::return_shared(user_obj);
         };
 
@@ -642,7 +642,7 @@ module proximity::proximity_test {
         // Advance the Clock by TIME_UPDATE + 1 milliseconds
         ts::next_tx(&mut scenario, user);
         {
-            clock.increment_for_testing(proximity::get_time_update() + 1)
+            clock.increment_for_testing(proximity::get_min_update_interval() + 1)
         };
 
         ts::next_tx(&mut scenario, user);
