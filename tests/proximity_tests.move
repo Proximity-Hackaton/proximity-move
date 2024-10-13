@@ -24,9 +24,7 @@ module proximity::proximity_test {
 
         // Create test addresses representing users
         let user = @0xAD;
-        // Begin a new test scenario
-        // First transaction to emulate module initialization
-
+        
         // Create a mock Clock object
         let mut scenario = test_scenario::begin(user);
         //let clock = clock::create_for_testing(scenario.ctx());
