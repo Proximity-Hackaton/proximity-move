@@ -181,11 +181,7 @@ module proximity::proximity {
 
     //This method is to purely simulate a graph, quick step (basically creates a fake user that detects random neighbors)
     public entry fun fake_user(_owner: address, _neighbors: vector<ID>, clock: &Clock, ctx: &mut TxContext){
-        let current_time = clock.timestamp_ms();
-        // Create a vector of IDs
-        
- 
-
+        let current_time = clock.timestamp_ms();    
         // Create a new Node
         let new_node = Node {
             id: object::new(ctx),
